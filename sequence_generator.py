@@ -1,8 +1,8 @@
 import numpy as np
 import random
 from utils import drawing
-#from qa_agents import graph_agent
-import graph_agent
+from qa_agents import graph_agent
+#import graph_agent
 
 import constants
 from utils import game_util

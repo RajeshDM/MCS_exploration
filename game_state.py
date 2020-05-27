@@ -6,10 +6,10 @@ import numpy as np
 import h5py
 import glob
 import os
-#from graph import graph_obj
+from graph import graph_obj
 #from exploration import graph_pbj
 #from exploration import game_util
-import graph_obj
+#import graph_obj
 #import game_util
 
 from utils import game_util
@@ -281,7 +281,7 @@ class GameState(object):
             # Do full reset
             self.scene_name = scene_name
             #print ("Full reset - in the first time of load")
-            grid_file = 'layouts/%s-layout.npy' % scene_name
+            grid_file = 'layouts/%s-layout_%s.npy' % (scene_name,str(constants.AGENT_STEP_SIZE))
             self.graph = graph_obj.Graph(grid_file, use_gt=use_gt)
             if seed is not None:
                 self.local_random.seed(seed)
@@ -421,7 +421,7 @@ class GameState(object):
         elif action['action'] == 'RotateLeft':
             action = "RotateLook, rotation=-90" 
         elif action['action'] == 'MoveAhead':
-            action =  'MoveAhead, amount=0.2'
+            action =  'MoveAhead, amount=0.5'
         
 
         #print ("number of objects discovered b4 taking action : ",len(self.discovered_objects))

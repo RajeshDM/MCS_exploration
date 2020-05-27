@@ -64,27 +64,34 @@ try:
     sess.run(tf.global_variables_initializer())
 
     #scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
-    #scene_types = ['retrieval_goal-']#, 'traversal_goal-', 'transferral_goal-']
-    scene_types = ['traversal_goal-']
+    #scene_types = ['retrieval_goal-', 'traversal_goal-']#, 'transferral_goal-']
+    #scene_types = ['traversal_goal-']
 
 
-    #scene_numbers = ['0933']
-    scene_numbers = create_scene_numbers(20)
+    scene_numbers = ['0933']
+    #scene_numbers = create_scene_numbers(2)
     print (scene_numbers)
     #exit()
     #scene_number = [i]
     all_data = {}
+    training_data = {}
+    exploration_data = {}
+    actual_count_of_explored_scenes = {}
     for elem in scene_types :
         all_data[elem] = {"explored": [], "actual":[], 'explored_total':0, 'actual_total':0}
+        training_data[elem] = {}
+        exploration_data[elem] = {}
+        actual_count_of_explored_scenes[elem] = 0
+
+    #env = game_util.create_ai2thor_env()
 
     for scene_type in scene_types :
         for scene_number in scene_numbers :
-            #new_data, bounds, goal_pose = sequence_generator.generate_episode()
-            new_data, bounds, goal_pose = sequence_generator.explore_scene(str(scene_type)+ scene_number + ".json")
+            
             current_explored = 0
-            current_actual = 0
-
+            new_data, bounds, goal_pose = sequence_generator.explore_scene(str(scene_type)+ scene_number + ".json")
             current_explored = len(sequence_generator.agent.game_state.discovered_objects)
+
             #sequence_generator.agent.game_state.discovered_objects = []
             print ("Total objects discovered = " ,current_explored )
             #with open("discovered_data.json","w") as fp:   
@@ -94,39 +101,42 @@ try:
 
             '''
             Checking for number of objects by using AIthor controller
-            '''
-            
-            
-            env = game_util.create_ai2thor_env()
+            current_actual = 0
             event = game_util.reset_ai2thor_env(env,str(scene_type)+ scene_number + ".json")
-            print (type(event))
             current_actual = len(event.metadata['objects'])
-            print (current_actual)
-            env.stop()
-            
-            all_data[scene_type]['explored'].append(current_explored)
-            all_data[scene_type]['actual'].append(current_actual)
+            '''
+           
+            #all_data[scene_type]['explored'].append(current_explored)
+            #all_data[scene_type]['actual'].append(current_actual)
             all_data[scene_type]['explored_total'] += current_explored
-            all_data[scene_type]['actual_total'] += current_actual
+            #all_data[scene_type]['actual_total'] += current_actual
             
+            #training_data[scene_type][scene_number] = current_actual
+            exploration_data[scene_type][scene_number] = current_explored
             
         for key,items in all_data.items():
-            print ("For scenes in : ", key)
-            print ("Explored = ", items['explored_total'])
-            print ("Actual", items['actual_total'])
-            #print ("fraction" , )
+            print ("Explored total= ", items['explored_total'])
+            #print ("Actual", items['actual_total'])
 
-    #print ("1 done")
-    '''
-    new_data, bounds, goal_pose = sequence_generator.generate_episode()
-    print ("2 done")
-    new_data, bounds, goal_pose = sequence_generator.generate_episode()
-    print ("3 done")
-    new_data, bounds, goal_pose = sequence_generator.generate_episode()
-    print ("4 done")
-    new_data, bounds, goal_pose = sequence_generator.generate_episode()
-    '''
+    actual_data = json.load(open('training_total_objects_data.json'))
 
+    for key,value in exploration_data.items() :
+        for key2, value2 in value.items() :
+            actual_count_of_explored_scenes[key] += actual_data[key][key2] 
+
+    #print ("Total explored = " , all_data.items)
+    for key,items in all_data.items():
+        print ("Total explored for scenes in {} is {}".format(key, items['explored_total']))
+        print ("Total actual for scenes in {} is {}".format( key, actual_count_of_explored_scenes[key]))
+
+
+    '''
+    with open("training_total_objects_data.json","w") as fp:   
+        json.dump(training_data,fp,indent=1)  
+        #Actual 2105 - retrieval 
+        #Actual 3670 - traversal
+        #Actual 3480 - transferal
+    '''
 except:
     import traceback
     traceback.print_exc()

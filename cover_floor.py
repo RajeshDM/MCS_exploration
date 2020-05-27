@@ -1,13 +1,13 @@
 
-#import constants
+import constants
 
 testing = 0
 
 #max_abs = 5/constants.AGENT_STEP_SIZE
 if testing != 1 :
-    AGENT_STEP_SIZE = 0.1
-    max_abs = 5/AGENT_STEP_SIZE
-    move_step_size = 10
+    #AGENT_STEP_SIZE = 0
+    max_abs = 5/constants.AGENT_STEP_SIZE
+    move_step_size =7
 else :
     move_step_size = 1
     max_abs =1

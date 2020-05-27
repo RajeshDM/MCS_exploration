@@ -28,7 +28,7 @@ for i in np.arange(xMin,xMax, constants.AGENT_STEP_SIZE):
         main_data["allPoints"].append(object_to_append) 
 
 
-with open("transferral_data-layout.json","w") as fp:   
+with open("transferral_data-layout_" + str(constants.AGENT_STEP_SIZE)+ ".json","w") as fp:   
     #print (len(self.discovered_objects))   
     #json.dump(self.discovered_objects,fp,indent=1)
     json.dump(main_data,fp,indent=1)

@@ -10,6 +10,8 @@ from networks.free_space_network import FreeSpaceNetwork
 from game_state import GameState
 from utils import game_util
 from graph import graph_obj
+#import graph_obj
+#import game_util
 from networks.qa_planner_network import QAPlannerNetwork
 from game_state import QuestionGameState
 from qa_agents.qa_agent import QAAgent
@@ -147,7 +149,7 @@ class GraphAgent(object):
         if scene_name is not None:
             if self.game_state.env is not None and type(self.game_state) == GameState:
                 self.game_state.reset(scene_name, use_gt=False, seed=seed,config_filename=config_filename)
-            self.gt_graph = graph_obj.Graph('layouts/%s-layout.npy' % scene_name, use_gt=True)
+            self.gt_graph = graph_obj.Graph('layouts/%s-layout_%s.npy' % (scene_name,str(constants.AGENT_STEP_SIZE)), use_gt=True)
             self.bounds = [self.game_state.graph.xMin, self.game_state.graph.yMin,
                 self.game_state.graph.xMax - self.game_state.graph.xMin + 1,
                 self.game_state.graph.yMax - self.game_state.graph.yMin + 1]
