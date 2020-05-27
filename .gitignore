@@ -17,3 +17,4 @@ thor_builds/
 logs
 question_data_dump
 *weights
+SCENE_HISTORY/*.*

@@ -65,7 +65,7 @@ try:
 
     #scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-']#, 'transferral_goal-']
-    #scene_types = ['traversal_goal-']
+    scene_types = ['traversal_goal-']
 
 
     scene_numbers = ['0933']
