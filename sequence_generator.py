@@ -200,7 +200,7 @@ class SequenceGenerator(object):
             while len(plan) > 0:
                 action = plan[0]
                 #print ("action to take" , action)
-                self.agent.step(action)
+                self.event = self.agent.step(action)
                 action_vec[self.action_util.action_dict_to_ind(action)] = 1
                 #plan.pop()
                 #print(plan)
@@ -243,7 +243,7 @@ class SequenceGenerator(object):
             #print ("self.states ", self.states)
             #seen_terminal = seen_terminal or int(len(optimal_plan) == 0)
        
-        self.agent.game_state.env.end_scene('', 0.0) 
+        #self.agent.game_state.env.end_scene('', 0.0) 
 
         self.bounds = [self.game_state.graph.xMin, self.game_state.graph.yMin,
             self.game_state.graph.xMax - self.game_state.graph.xMin + 1,

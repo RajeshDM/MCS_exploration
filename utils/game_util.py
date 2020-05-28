@@ -8,6 +8,8 @@ from machine_common_sense import MCS
 import machine_common_sense
 import math
 import json
+import platform
+
 
 import constants
 
@@ -37,11 +39,29 @@ def wrap_step( **kwargs):
 
 RUN_MCS = 1
 
+'''
+if platform.system() == "Linux":
+    unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
+    config_file_folder = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
+elif platform.system() == "Darwin":
+    unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+    config_file_folder = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
+else:
+    app = None
+'''
+
 def create_env(x_display=constants.X_DISPLAY,
                quality='MediumCloseFitShadows',
                player_screen_height=constants.SCREEN_HEIGHT,
                player_screen_width=constants.SCREEN_WIDTH):
     print('Creating env')
+
+    if platform.system() == "Linux":
+        unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
+    elif platform.system() == "Darwin":
+        unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+    else:
+        app = None
         
     if RUN_MCS != 1 :
         env = controller.Controller(quality=quality)
@@ -52,7 +72,7 @@ def create_env(x_display=constants.X_DISPLAY,
     
     else : 
         #unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
-        unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+        #unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
 
         '''
         env = controller.Controller(
@@ -90,7 +110,13 @@ def create_ai2thor_env(x_display=constants.X_DISPLAY,
                player_screen_width=constants.SCREEN_WIDTH):
     print('Creating env')
         
-    unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+    if platform.system() == "Linux":
+        unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
+    elif platform.system() == "Darwin":
+        unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+    else:
+        app = None
+    #unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
     
     env = controller.Controller(
             quality='Medium',
@@ -114,7 +140,15 @@ def create_ai2thor_env(x_display=constants.X_DISPLAY,
 
 def reset_ai2thor_env(env , config_filename):
     
-    config_json_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/" + config_filename
+    if platform.system() == "Linux":
+        config_file_folder = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
+    elif platform.system() == "Darwin":
+        config_file_folder = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
+    else:
+        app = None
+
+    #config_json_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/" + config_filename
+    config_json_file_path = config_file_folder + config_filename
     #traversal_goal-0004.json"
     config_data , status = MCS.load_config_json_file(config_json_file_path)
 
@@ -135,12 +169,20 @@ def reset(env, scene_name_or_num, config_filename="",
     else:
         scene_name = 'FloorPlan%d' % scene_name_or_num
 
+    if platform.system() == "Linux":
+        config_file_folder = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
+    elif platform.system() == "Darwin":
+        config_file_folder = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
+    else:
+        app = None
+
     if RUN_MCS == 1 :
     
         #config_json_file_path = "/home/rajesh/rajesh/mcs_data/playroom.json"
         #config_json_file_path = "/home/rajesh/rajesh/mcs_data/interaction_scenes/traversal_goal-0004.json"
         #config_json_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/traversal_goal-0004.json"
-        config_json_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/" + config_filename
+        #config_json_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/" + config_filename
+        config_json_file_path = config_file_folder + config_filename
         print (config_json_file_path)
         config_data , status = MCS.load_config_json_file(config_json_file_path)
 

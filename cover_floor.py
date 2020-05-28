@@ -7,7 +7,7 @@ testing = 0
 if testing != 1 :
     #AGENT_STEP_SIZE = 0
     max_abs = 5/constants.AGENT_STEP_SIZE
-    move_step_size =7
+    move_step_size = 6
 else :
     move_step_size = 1
     max_abs =1
@@ -44,21 +44,23 @@ def flood_fill(x,y, check_validity):
     curr_q.append((x,y))
     i = 1
     while (len(curr_q) != 0):
-        (x1,y1) = curr_q.pop()
-        #print (x1,y1)
+        #(x1,y1) = curr_q.pop()
+        (x1,y1) = curr_q[0]
+        curr_q = curr_q[1:]
+        print (x1,y1)
         #color(x1,y1)
  
         if (check_validity(x1+move_step_size,y1,q)):
              q.append((x1+move_step_size,y1))
              curr_q.append((x1+move_step_size,y1))
              i += 1
-        if (check_validity(x1-move_step_size,y1,q)):
-             q.append((x1-move_step_size,y1))
-             curr_q.append((x1-move_step_size,y1))
-             i += 1
         if (check_validity(x1,y1+move_step_size,q)):
              q.append((x1,y1+move_step_size))
              curr_q.append((x1,y1+move_step_size))
+             i += 1
+        if (check_validity(x1-move_step_size,y1,q)):
+             q.append((x1-move_step_size,y1))
+             curr_q.append((x1-move_step_size,y1))
              i += 1
         if (check_validity(x1,y1-move_step_size,q)):
              q.append((x1,y1-move_step_size))

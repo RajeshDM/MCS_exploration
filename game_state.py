@@ -356,6 +356,7 @@ class GameState(object):
                 print ("rotation ", self.event.rotation)
                 rotation_angle = -(self.event.rotation % 90)
                 action = "RotateLook, rotation=%d" %int(rotation_angle) 
+                self.goal = self.event.goal
                 #action = {'action':"Pass"}
                 #print ("z before turning ", self.event.position['z']/constants.AGENT_STEP_SIZE)
                 #print ("z before turning ", self.event.position['z'])

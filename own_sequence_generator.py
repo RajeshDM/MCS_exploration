@@ -63,9 +63,11 @@ try:
 
     sess.run(tf.global_variables_initializer())
 
+    all_scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-']#, 'transferral_goal-']
-    scene_types = ['traversal_goal-']
+    #scene_types = ['transferral_goal-']
+    scene_types = ['retrieval_goal-']
 
 
     scene_numbers = ['0933']
@@ -77,20 +79,41 @@ try:
     training_data = {}
     exploration_data = {}
     actual_count_of_explored_scenes = {}
+    total_goal_objects_found = {}
     for elem in scene_types :
         all_data[elem] = {"explored": [], "actual":[], 'explored_total':0, 'actual_total':0}
         training_data[elem] = {}
         exploration_data[elem] = {}
         actual_count_of_explored_scenes[elem] = 0
+        total_goal_objects_found[elem] = 0
 
     #env = game_util.create_ai2thor_env()
+
 
     for scene_type in scene_types :
         for scene_number in scene_numbers :
             
             current_explored = 0
             new_data, bounds, goal_pose = sequence_generator.explore_scene(str(scene_type)+ scene_number + ".json")
-            current_explored = len(sequence_generator.agent.game_state.discovered_objects)
+            current_explored_objects = sequence_generator.agent.game_state.discovered_objects
+            current_explored = len(current_explored_objects)
+            
+            #sequence_generator.agent.game_state.env.end_scene('', 0.0) 
+            goal = sequence_generator.agent.game_state.goal
+            goal_objects = []
+            
+            #if goal['category'] == all_scene_types[-1][:-6]:
+            #    goal_objects.append(goal.metadata['target_1']["id"])
+            #    goal_objects.append(goal.metadata['target_2']["id"])
+                #print (sequence_generator.agent.game_state.goal.metadata['target']["id"] )
+            
+            print (type(goal))
+            #for key,value in sequence_generator.agent.game_state.goal.__dict__.items():
+            for key,value in goal.metadata.items():
+                if key == "target" or key == "target_1" or key == "target_2":
+                    goal_objects.append(goal.metadata['target']["id"])
+                    #goal_objects.append(goal.metadata['target_2']["id"])
+                    #print (key, type(value))
 
             #sequence_generator.agent.game_state.discovered_objects = []
             print ("Total objects discovered = " ,current_explored )
@@ -98,6 +121,9 @@ try:
             #    print ("number of objects discovered until now : ",len(sequence_generator.agent.game_state.discovered_objects))  
             #    json.dump(sequence_generator.agent.game_state.discovered_objects,fp,indent=1)  
             
+            for elem in goal_objects :
+                if elem in current_explored_objects:
+                    total_goal_objects_found[scene_type] += 1 
 
             '''
             Checking for number of objects by using AIthor controller
@@ -126,8 +152,9 @@ try:
 
     #print ("Total explored = " , all_data.items)
     for key,items in all_data.items():
-        print ("Total explored for scenes in {} is {}".format(key, items['explored_total']))
-        print ("Total actual for scenes in {} is {}".format( key, actual_count_of_explored_scenes[key]))
+        print ("Total explored    for scenes in {} is {}".format(key, items['explored_total']))
+        print ("Total actual      for scenes in {} is {}".format( key, actual_count_of_explored_scenes[key]))
+        print ("Total goal found  for scenes in {} is {}".format( key, total_goal_objects_found[key]))
 
 
     '''
@@ -137,8 +164,7 @@ try:
         #Actual 3670 - traversal
         #Actual 3480 - transferal
     '''
+
 except:
     import traceback
     traceback.print_exc()
-
-
