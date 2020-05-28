@@ -12,6 +12,6 @@ boto3
 xcffib
 mss
 progressbar2
-tensorflow==1.15
+tensorflow==1.15.2
 requests
 #ai2thor==0.0.34
