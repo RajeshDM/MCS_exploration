@@ -80,12 +80,14 @@ try:
     exploration_data = {}
     actual_count_of_explored_scenes = {}
     total_goal_objects_found = {}
+    actual_goal_data = {}
     for elem in scene_types :
         all_data[elem] = {"explored": [], "actual":[], 'explored_total':0, 'actual_total':0}
         training_data[elem] = {}
         exploration_data[elem] = {}
         actual_count_of_explored_scenes[elem] = 0
         total_goal_objects_found[elem] = 0
+        actual_goal_data[elem] = 0
 
     #env = game_util.create_ai2thor_env()
 
@@ -112,6 +114,7 @@ try:
             for key,value in goal.metadata.items():
                 if key == "target" or key == "target_1" or key == "target_2":
                     goal_objects.append(goal.metadata['target']["id"])
+                    actual_goal_data[elem] += 1 
                     #goal_objects.append(goal.metadata['target_2']["id"])
                     #print (key, type(value))
 
@@ -152,9 +155,10 @@ try:
 
     #print ("Total explored = " , all_data.items)
     for key,items in all_data.items():
-        print ("Total explored    for scenes in {} is {}".format(key, items['explored_total']))
-        print ("Total actual      for scenes in {} is {}".format( key, actual_count_of_explored_scenes[key]))
-        print ("Total goal found  for scenes in {} is {}".format( key, total_goal_objects_found[key]))
+        print ("Total explored     for scenes in {} is {}".format(key, items['explored_total']))
+        print ("Total actual       for scenes in {} is {}".format( key, actual_count_of_explored_scenes[key]))
+        print ("Total goals found  for scenes in {} is {}".format( key, total_goal_objects_found[key]))
+        print ("Total goal actual  for scenes in {} is {}".format( key, actual_goal_data[key]))
 
 
     '''

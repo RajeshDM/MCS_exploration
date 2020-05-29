@@ -93,8 +93,10 @@ def create_env(x_display=constants.X_DISPLAY,
                 }
             )
         '''
-        env = machine_common_sense.MCS_Controller_AI2THOR(
-                         "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor")
+        #env = machine_common_sense.MCS_Controller_AI2THOR(
+        env = machine_common_sense.MCS_Controller_AI2THOR(unity_app_file_path)
+        
+        #                 "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor")
     #env.start(x_display=x_display)
     
     print('Starting env, if this takes more than a few seconds (except for downloading the build), the display is not set correctly')
