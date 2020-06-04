@@ -91,7 +91,7 @@ class GameState(object):
 
         self.im_count = 0
         self.times = np.zeros((4, 2))
-        self.discovered = []
+        self.discovered_explored = {} 
         self.discovered_objects = []
 
     def process_frame(self, run_object_detection=False):
@@ -286,7 +286,7 @@ class GameState(object):
             if seed is not None:
                 self.local_random.seed(seed)
             lastActionSuccess = False
-            self.discovered = []
+            self.discovered_explored = {}
             self.discovered_objects = []
 
             self.bounds = [self.graph.xMin, self.graph.yMin,
@@ -372,7 +372,7 @@ class GameState(object):
                 #print(start_point_2)
                 self.start_point = start_point_2[:]
                 self.end_point = self.start_point[:]
-                self.end_point = (self.end_point[0]-1 , self.end_point[1]-1 , self.end_point[2])
+                self.end_point = (self.end_point[0] , self.end_point[1] , (self.end_point[2]+ 1) %4)
                 #print ("end point = ", self.end_point)
                 #print ("start point = ", self.start_point)
                 #print ("last action success", self.event['lastActionSuccess'])
@@ -423,6 +423,10 @@ class GameState(object):
             action = "RotateLook, rotation=-90" 
         elif action['action'] == 'MoveAhead':
             action =  'MoveAhead, amount=0.5'
+            #action =  'MoveAhead, amount=0.2'
+        elif action['action'] == 'OpenObject':
+            action = "OpenObject,objectId="+ str(action["objectId"])
+            print ("constructed action for open object", action)
         
 
         #print ("number of objects discovered b4 taking action : ",len(self.discovered_objects))
@@ -432,6 +436,8 @@ class GameState(object):
         #print ("last action success", self.event.lastActionSuccess)
         #lastActionSuccess = self.event.metadata['lastActionSuccess']
         lastActionSuccess = self.event.return_status
+        #print ("field of view", self.event.camera_field_of_view)
+        #print ("camera clipping planes ", self.event.camera_clipping_planes)
         #print ("last action sucess" , lastActionSuccess)
         #mcs_output = wrap_output(self.event) 
         #print ("number of objects seen in this step : ", len(mcs_output.object_list))
@@ -444,9 +450,9 @@ class GameState(object):
 
         #for obj in mcs_output.object_list :
         for obj in self.event.object_list :
-            if obj.uuid not in self.discovered :
+            if obj.uuid not in self.discovered_explored :
                 print ("uuid : ", obj.uuid)
-                self.discovered.append(obj.uuid)
+                self.discovered_explored[obj.uuid] = {0:obj.position}
                 self.discovered_objects.append(obj.__dict__)
        
         #with open("discovered_data.json","w") as fp:

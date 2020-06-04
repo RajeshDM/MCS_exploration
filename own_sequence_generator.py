@@ -67,10 +67,11 @@ try:
     #scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-']#, 'transferral_goal-']
     #scene_types = ['transferral_goal-']
-    scene_types = ['retrieval_goal-']
+    scene_types = ['traversal_goal-']
+    #scene_types = ['retrieval_goal-']
 
 
-    scene_numbers = ['0933']
+    scene_numbers = ['0933','0934','0935']
     #scene_numbers = create_scene_numbers(2)
     print (scene_numbers)
     #exit()
@@ -96,7 +97,9 @@ try:
         for scene_number in scene_numbers :
             
             current_explored = 0
-            new_data, bounds, goal_pose = sequence_generator.explore_scene(str(scene_type)+ scene_number + ".json")
+            #new_data, bounds, goal_pose = sequence_generator.explore_scene(str(scene_type)+ scene_number + ".json")
+            sequence_generator.explore_3d_scene(str(scene_type)+ scene_number + ".json")
+            #exit()
             current_explored_objects = sequence_generator.agent.game_state.discovered_objects
             current_explored = len(current_explored_objects)
             
@@ -113,8 +116,8 @@ try:
             #for key,value in sequence_generator.agent.game_state.goal.__dict__.items():
             for key,value in goal.metadata.items():
                 if key == "target" or key == "target_1" or key == "target_2":
-                    goal_objects.append(goal.metadata['target']["id"])
-                    actual_goal_data[elem] += 1 
+                    goal_objects.append(goal.metadata[key]["id"])
+                    actual_goal_data[scene_type] += 1 
                     #goal_objects.append(goal.metadata['target_2']["id"])
                     #print (key, type(value))
 
