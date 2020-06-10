@@ -39,16 +39,10 @@ def wrap_step( **kwargs):
 
 RUN_MCS = 1
 
-'''
-if platform.system() == "Linux":
-    unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
-    config_file_folder = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
-elif platform.system() == "Darwin":
-    unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
-    config_file_folder = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
-else:
-    app = None
-'''
+unity_app_file_path_linux = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
+config_file_folder_linux = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
+unity_app_file_path_mac = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+config_file_folder_mac = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
 
 def create_env(x_display=constants.X_DISPLAY,
                quality='MediumCloseFitShadows',
@@ -57,9 +51,9 @@ def create_env(x_display=constants.X_DISPLAY,
     print('Creating env')
 
     if platform.system() == "Linux":
-        unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
+        unity_app_file_path = unity_app_file_path_linux
     elif platform.system() == "Darwin":
-        unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+        unity_app_file_path = unity_app_file_path_mac
     else:
         app = None
         
@@ -113,9 +107,9 @@ def create_ai2thor_env(x_display=constants.X_DISPLAY,
     print('Creating env')
         
     if platform.system() == "Linux":
-        unity_app_file_path = "/home/rajesh/rajesh/mcs_data/MCS-AI2-THOR-Unity-App-v0.0.6.x86_64" 
+        unity_app_file_path = unity_app_file_path_linux
     elif platform.system() == "Darwin":
-        unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
+        unity_app_file_path = unity_app_file_path_mac
     else:
         app = None
     #unity_app_file_path = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/mcs_playroom_old/algorithms/a3c/gym_ai2thor/MCSai2thor.app/Contents/MacOS/MCSai2thor"
@@ -143,9 +137,9 @@ def create_ai2thor_env(x_display=constants.X_DISPLAY,
 def reset_ai2thor_env(env , config_filename):
     
     if platform.system() == "Linux":
-        config_file_folder = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
+        config_file_folder = config_file_folder_linux
     elif platform.system() == "Darwin":
-        config_file_folder = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
+        config_file_folder = config_file_folder_mac
     else:
         app = None
 
@@ -172,9 +166,9 @@ def reset(env, scene_name_or_num, config_filename="",
         scene_name = 'FloorPlan%d' % scene_name_or_num
 
     if platform.system() == "Linux":
-        config_file_folder = "/home/rajesh/rajesh/mcs_data/interaction_scenes/"
+        config_file_folder = config_file_folder_linux
     elif platform.system() == "Darwin":
-        config_file_folder = "/Users/rajesh/Rajesh/Subjects/Research/aiThor/interaction_scenes/"
+        config_file_folder = config_file_folder_mac
     else:
         app = None
 
