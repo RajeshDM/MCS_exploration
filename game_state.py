@@ -75,10 +75,14 @@ def retrieve_position(scene_event):
 
 
 class GameState(object):
-    def __init__(self, sess=None, depth_scope=None):
-        self.env = game_util.create_env()
+    def __init__(self, sess=None,env=None, depth_scope=None):
+        if env == None:
+            self.env = game_util.create_env()
+        else :
+            self.env = env
         self.action_util = action_util.ActionUtil()
         self.local_random = random.Random()
+        '''
         if constants.PREDICT_DEPTH:
             from depth_estimation_network import depth_estimator
             if depth_scope is not None:
@@ -88,7 +92,7 @@ class GameState(object):
                 self.depth_estimator = depth_estimator.get_depth_estimator(sess)
         if constants.OBJECT_DETECTION:
             self.object_detector = detector.get_detector()
-
+        '''
         self.im_count = 0
         self.times = np.zeros((4, 2))
         self.discovered_explored = {} 
@@ -282,7 +286,7 @@ class GameState(object):
             self.scene_name = scene_name
             #print ("Full reset - in the first time of load")
             grid_file = 'layouts/%s-layout_%s.npy' % (scene_name,str(constants.AGENT_STEP_SIZE))
-            self.graph = graph_obj.Graph(grid_file, use_gt=use_gt)
+            self.graph = graph_obj.Graph(grid_file, self.action_util, use_gt=use_gt)
             if seed is not None:
                 self.local_random.seed(seed)
             lastActionSuccess = False
@@ -413,8 +417,9 @@ class GameState(object):
         #print (action)
 
         # The object nearest the center of the screen is open/closed if none is provided.
-        if (action['action'] == 'OpenObject' or action['action'] == 'CloseObject') and 'objectId' not in action:
-            game_util.set_open_close_object(action, self.event)
+        
+        #if (action['action'] == 'OpenObject' or action['action'] == 'CloseObject') and 'objectId' not in action:
+        #    game_util.set_open_close_object(action, self.event)
         #print ("action in game step - final action to take", action)
 
         if action['action'] == 'RotateRight':
@@ -427,8 +432,8 @@ class GameState(object):
         elif action['action'] == 'OpenObject':
             action = "OpenObject,objectId="+ str(action["objectId"])
             print ("constructed action for open object", action)
-        
-
+        '''
+        '''
         #print ("number of objects discovered b4 taking action : ",len(self.discovered_objects))
         self.event = self.env.step(action)
         #print ("type of event in step : ", type(self.event))

@@ -1,6 +1,3 @@
-
-#import tensorflow as tf
-
 import numpy as np
 import pdb
 import os
@@ -25,7 +22,11 @@ data_buffer = []
 data_counts = np.full(constants.REPLAY_BUFFER_SIZE, 9999)
 os.environ["CUDA_VISIBLE_DEVICES"] = str(constants.GPU_ID)
 
+'''
+Function to create scene numbers from 0 to Max scene number
 
+TODO : change from min scene number to max scene number 
+'''
 def create_scene_numbers(max_scene_number):
     scene_numbers = []
     for i in range (0,10):
@@ -37,35 +38,33 @@ def create_scene_numbers(max_scene_number):
                     scene_numbers.append(str(i)+ str(j)+ str(k)+str(l))
                     if len(scene_numbers) >= max_scene_number:
                         return scene_numbers
+
+
+def explore_scene(sequence_generator,scene_type, scene_number):
+    sequence_generator.explore_3d_scene(str(scene_type)+ scene_number + ".json")
+
+    config_data = {}
+    
+    config_data['performerStart'] = {}
+        
+    config_data['performerStart']['x'] = 10
+    config_data['performerStart']['y'] = 0
+    config_data['performerStart']['z'] = 10
+
+    config_data['objects'] = []
+
+    current_explored_objects = sequence_generator.agent.game_state.discovered_objects
+
+    for elem in current_explored_objects:
+        config_data['objects'].append(elem)
     
 
-
-#def explore_scene(scene_type, scene_number):
-    
+    return config_data
 
 
-try:
-    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-    '''
-    with tf.variable_scope('nav_global_network'):
-        network = FreeSpaceNetwork(constants.GRU_SIZE, constants.BATCH_SIZE, constants.NUM_UNROLLS)
-        network.create_net()
-        training_step = network.training_op
-
-    with tf.variable_scope('loss'):
-        loss_summary_op = tf.summary.merge([
-            tf.summary.scalar('loss', network.loss),
-            ])
-    summary_full = tf.summary.merge_all()
-    conv_var_list = [v for v in tf.trainable_variables() if 'conv' in v.name and 'weight' in v.name and
-                    (v.get_shape().as_list()[0] != 1 or v.get_shape().as_list()[1] != 1)]
-    for var in conv_var_list:
-        tf_util.conv_variable_summaries(var, scope=var.name.replace('/', '_')[:-2])
-    summary_with_images = tf.summary.merge_all()
-    '''
-
+def explore_all_scenes():
     #sess = tf_util.Session()
-    sequence_generator = SequenceGenerator(None)
+    sequence_generator = SequenceGenerator(None,None)
 
     #sess.run(tf.global_variables_initializer())
 
@@ -78,8 +77,8 @@ try:
 
 
     #scene_numbers = ['0933','0934','0935']
-    scene_numbers = ['0058']#,'0934','0935']
-    #scene_numbers = create_scene_numbers(100)
+    #scene_numbers = ['0058']#,'0934','0935']
+    scene_numbers = create_scene_numbers(1)
     print (scene_numbers)
     #exit()
     #scene_number = [i]
@@ -97,6 +96,8 @@ try:
         total_goal_objects_found[elem] = 0
         actual_goal_data[elem] = 0
 
+
+    total_actions = 0
     #env = game_util.create_ai2thor_env()
 
 
@@ -105,20 +106,17 @@ try:
             
             current_explored = 0
             #new_data, bounds, goal_pose = sequence_generator.explore_scene(str(scene_type)+ scene_number + ".json")
-            sequence_generator.explore_3d_scene(str(scene_type)+ scene_number + ".json")
+            number_actions = sequence_generator.explore_3d_scene(str(scene_type)+ scene_number + ".json")
             #exit()
             current_explored_objects = sequence_generator.agent.game_state.discovered_objects
             current_explored_uuids = sequence_generator.agent.game_state.discovered_explored
             current_explored = len(current_explored_objects)
             
+            total_actions += number_actions
             #sequence_generator.agent.game_state.env.end_scene('', 0.0) 
             goal = sequence_generator.agent.game_state.goal
             goal_objects = []
             
-            #if goal['category'] == all_scene_types[-1][:-6]:
-            #    goal_objects.append(goal.metadata['target_1']["id"])
-            #    goal_objects.append(goal.metadata['target_2']["id"])
-                #print (sequence_generator.agent.game_state.goal.metadata['target']["id"] )
             
             print (type(goal))
             #for key,value in sequence_generator.agent.game_state.goal.__dict__.items():
@@ -161,6 +159,7 @@ try:
             
             #training_data[scene_type][scene_number] = current_actual
             exploration_data[scene_type][scene_number] = current_explored
+            print ("Total actions until now= ", total_actions)
             
         #for key,items in all_data.items():
             #print ("Explored total= ", items['explored_total'])
@@ -180,6 +179,8 @@ try:
         print ("Total goal actual  for scenes in {} is {}".format( key, actual_goal_data[key]))
 
 
+    print ("Total actions = ", total_actions)
+
     '''
     with open("training_total_objects_data.json","w") as fp:   
         json.dump(training_data,fp,indent=1)  
@@ -188,6 +189,6 @@ try:
         #Actual 3480 - transferal
     '''
 
-except:
-    import traceback
-    traceback.print_exc()
+
+if __name__ == '__main__':
+    explore_all_scenes()

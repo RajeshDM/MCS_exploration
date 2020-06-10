@@ -90,6 +90,7 @@ def get_visible_points(x,y,direction,camera_field_of_view,radius):
     angle_pt_2 = math.radians(event.rotation + (event.camera_field_of_view/2))
     '''
     rotation = direction * 90
+    #radius = radius * 1.2
     angle_pt_1 = math.radians(rotation - (camera_field_of_view/2))
     angle_pt_2 = math.radians(rotation + (camera_field_of_view/2))
     
@@ -173,11 +174,18 @@ def get_unseen(g):#,xMin,xMax,yMin,yMax):
 
     return not_seen_points
 
+'''
+Funcrtion to get all the visible points from a certain point in the 2D grid
+'''
 
 def points_visible_from_position(x,y,camera_field_of_view,radius):
     number_visible_points = 0
     number_directions = 4
-    for direction in range (0,number_directions):
+    #number_directions = 8
+    for direction in range (0,number_directions):#,number_directions*2):
+    #for direction in range (0,number_directions):
+        #print (direction)
+        #number_visible_points += len(get_visible_points(x,y,direction/2,camera_field_of_view, radius))
         number_visible_points += len(get_visible_points(x,y,direction,camera_field_of_view, radius))
 
     return number_visible_points
@@ -195,13 +203,13 @@ def update_seen(g, x, z, direction,event):
 
 def explore_point(x,y,graph ,agent):
 
-    directions = 4
+    directions = 8
     event = agent.game_state.event
     #pose = 
-    action = action = "RotateLook, rotation=45"
-    for i in range (0,directions,0.5):
-        agent.step(action)
-        #update_seen( graph, event. , event. ,i ,  event  )
+    action = "RotateLook, rotation=45"
+    for direction in range (0,directions):
+        agent.game_state.env.step(action)
+        update_seen( graph,x , y ,direction/2 ,  event  )
     #pass
     return agent
     

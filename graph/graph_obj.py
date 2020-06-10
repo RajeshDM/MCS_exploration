@@ -11,7 +11,7 @@ EPSILON = 1e-7
 
 
 class Graph(object):
-    def __init__(self, gt_source_file, use_gt=False, construct_graph=True):
+    def __init__(self, gt_source_file, action_util, use_gt=False, construct_graph=True):
         self.points = (np.load(gt_source_file) * 1.0 / constants.AGENT_STEP_SIZE).astype(int)
         '''
         self.xMin = self.points[:, 0].min() - constants.SCENE_PADDING * 2
@@ -23,6 +23,7 @@ class Graph(object):
         self.yMin = self.points[:, 1].min()
         self.xMax = self.points[:, 0].max()
         self.yMax = self.points[:, 1].max()
+        action_util = action_util.actions
         #print ("xmin , ymin, xmax, ymax", self.xMin, self.yMin, self.xMax, self.yMax)
         gt_edges = {(point[0], point[1]) for point in self.points}
         self.graph = nx.DiGraph()
@@ -46,17 +47,42 @@ class Graph(object):
                         node = (xx, yy, direction)
                         back_direction = (direction + 2) % 4
                         back_node = (xx, yy, back_direction)
-                        self.graph.add_edge(node, (xx, yy, (direction + 1) % 4), weight=1)
-                        self.graph.add_edge(node, (xx, yy, (direction - 1) % 4), weight=1)
                         curr_weight = weight
+                        '''
+                        self.graph.add_edge(node, (xx, yy, (direction + 1) % 4), weight=1,action=action_util['RotateLeft'])
+                        self.graph.add_edge(node, (xx, yy, (direction - 1) % 4), weight=1,action=action_util['RotateRight'])
                         if direction == 0 and yy != self.yMax:
-                            self.graph.add_edge((xx, yy + 1, back_direction), back_node, weight=curr_weight)
+                            self.graph.add_edge((xx, yy + 1, back_direction), back_node, weight=curr_weight,action=action_util['MoveAhead'])
+                        elif direction == 1 and xx != self.xMax:
+                            self.graph.add_edge((xx + 1, yy, back_direction), back_node, weight=curr_weight,action=action_util['MoveAhead'])
+                        elif direction == 2 and yy != self.yMin:
+                            self.graph.add_edge((xx, yy - 1, back_direction), back_node, weight=curr_weight,action=action_util['MoveAhead'])
+                        elif direction == 3 and xx != self.xMin:
+                            self.graph.add_edge((xx - 1, yy, back_direction), back_node, weight=curr_weight,action=action_util['MoveAhead'])
+                        '''
+                        self.graph.add_edge(node, (xx, yy, (direction + 1) % 4), weight=1)#,action_util['RotateRight'])
+                        self.graph.add_edge(node, (xx, yy, (direction - 1) % 4), weight=1)#,action_util['RotateLeft'])
+                        if direction == 0 and yy != self.yMax:
+                            self.graph.add_edge((xx, yy + 1, back_direction), back_node, weight=curr_weight,action = "" )
                         elif direction == 1 and xx != self.xMax:
                             self.graph.add_edge((xx + 1, yy, back_direction), back_node, weight=curr_weight)
                         elif direction == 2 and yy != self.yMin:
                             self.graph.add_edge((xx, yy - 1, back_direction), back_node, weight=curr_weight)
                         elif direction == 3 and xx != self.xMin:
                             self.graph.add_edge((xx - 1, yy, back_direction), back_node, weight=curr_weight)
+
+    '''
+        if action['action'] == 'RotateRight':
+            action = "RotateLook, rotation=90" 
+        elif action['action'] == 'RotateLeft':
+            action = "RotateLook, rotation=-90" 
+        elif action['action'] == 'MoveAhead':
+            action =  'MoveAhead, amount=0.5'
+            #action =  'MoveAhead, amount=0.2'
+        elif action['action'] == 'OpenObject':
+            action = "OpenObject,objectId="+ str(action["objectId"])
+            print ("constructed action for open object", action)
+    '''
 
     def test_graph(self):
         # graph sanity check
@@ -222,6 +248,12 @@ class Graph(object):
         return actions, path
 
     def get_plan_move(self, pose0, pose1):
+    
+        '''
+        action = self.graph[pose0][pose1]['action']        
+        return action
+        '''
+        
         if (pose0[2] + 1) % 4 == pose1[2]:
             action = {'action': 'RotateRight'}
         elif (pose0[2] - 1) % 4 == pose1[2]:
@@ -229,6 +261,7 @@ class Graph(object):
         else:
             action = {'action': 'MoveAhead', 'moveMagnitude' : constants.AGENT_STEP_SIZE}
         return action
+        
 
     def get_shifted_pose(self, pose):
         new_pose = np.array(pose)

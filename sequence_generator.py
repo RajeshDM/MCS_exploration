@@ -14,8 +14,8 @@ import math
 import time
 
 class SequenceGenerator(object):
-    def __init__(self, sess):
-        self.agent = graph_agent.GraphAgent(sess, reuse=True)
+    def __init__(self, sess,env):
+        self.agent = graph_agent.GraphAgent(sess,env, reuse=True)
         self.game_state = self.agent.game_state
         self.action_util = self.game_state.action_util
         self.planner_prob = 0.5
@@ -160,6 +160,7 @@ class SequenceGenerator(object):
         return (self.states, self.bounds, goal_pose)
 
     def explore_3d_scene(self,config_filename):
+        number_actions = 0
         self.scene_name = 'transferral_data'
         #print('New episode. Scene %s' % self.scene_name)
         self.agent.reset(self.scene_name,config_filename = config_filename)
@@ -167,7 +168,7 @@ class SequenceGenerator(object):
         pose = game_util.get_pose(self.game_state.event)[:3]
         plan, path = self.agent.gt_graph.get_shortest_path(
                 pose, self.game_state.end_point)
-        #print ("optimal path planning done", path, plan)
+        print ("optimal path planning done", path, plan)
         num_iters = 0
         exploration_routine = []
         exploration_routine = cover_floor.flood_fill(0,0, cover_floor.check_validity)        
@@ -183,7 +184,7 @@ class SequenceGenerator(object):
         #print (len(visible_points))
 
 
-        #number_visible_points = points_visible_from_position(exploration_routine[1][0],exploration_routine[1][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
+        #number_visible_points = points_visible_from_position(exploration_routine[10][0],exploration_routine[10][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
         #print ("number of visible points = ", number_visible_points)
 
         update_seen(self.graph.graph,pose[0],pose[1],pose[2],self.game_state.event)
@@ -192,12 +193,14 @@ class SequenceGenerator(object):
         #print (unexplored)
         #return 
 
+
         while ( len(unexplored) > 25 ) : 
             start_time = time.time()
 
             while len(plan) > 0:
                 action = plan[0]
                 #print ("action to take" , action)
+                number_actions += 1
                 self.agent.step(action)
                 self.event = self.game_state.event
                 plan = plan[1:]
@@ -210,11 +213,59 @@ class SequenceGenerator(object):
             
             max_visible = 0
             max_visible_position = []
+            
+            #self.agent = explore_point(pose[0],pose[1], self.graph.graph, self.agent)
+
+            flag = 0
+            object_id_to_search = ""
+            for key,value in self.agent.game_state.discovered_explored.items():
+                for key_2,value_2 in value.items():
+                    if key_2 == 0:# and key not in self.unexplored_objects:
+                        #self.unexplored_objects[key] = value
+                        graph_pos_x =  math.floor(value_2['x']/constants.AGENT_STEP_SIZE) 
+                        graph_pos_z =  math.floor(value_2['z']/constants.AGENT_STEP_SIZE) 
+                        if math.sqrt((abs(pose[0] -graph_pos_x))**2+(abs(pose[1]-graph_pos_z))**2) < 10:
+                            print ("objects nearby to explore ")    
+                            flag = 1
+                            optimal_plan, optimal_path = self.agent.gt_graph.get_shortest_path(
+                                    pose, (graph_pos_x,graph_pos_z,pose[2]))
+                            object_id_to_search = key
+                            plan = optimal_plan
+                            path = optimal_path
+                            break
+                if flag == 1 :
+                    break
+
+            while len(plan) > 0:
+                action = plan[0]
+                self.agent.step(action)
+                number_actions += 1
+                self.event = self.game_state.event
+                plan = plan[1:]
+                path.pop()
+                pose = game_util.get_pose(self.game_state.event)[:3]
+                #print ("pose_reached while going to object=" , pose)
+
+            if flag == 1:
+                action = {"action":"OpenObject", "objectId":object_id_to_search}
+                #action = "OpenObject, objectId=%s" % object_id_to_search
+            
+                self.agent.step(action)
+                number_actions += 1
+                self.event = self.game_state.event
+                print ("return status of open object aciton:",self.agent.game_state.event.return_status)
+                print ("agent pose : ", pose, ",  object location", graph_pos_x,graph_pos_z)
+        
+                #while (self.agent.event.return_status != "SUCCESSFUL" ) or trials < 10 :
+                #    trials += 1
+
 
             print ("before next best point calculation")
-        
             for elem in exploration_routine:
-                number_visible_points = points_visible_from_position(exploration_routine[1][0],exploration_routine[1][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
+                
+                #number_visible_points = points_visible_from_position(exploration_routine[1][0],exploration_routine[1][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
+                number_visible_points = points_visible_from_position(elem[0],elem[1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
+                #if max_visible < number_visible_points/math.sqrt((pose[0]-elem[0])**2 + (pose[1]-elem[1])**2):
                 if max_visible < number_visible_points:
                     max_visible_position.append(elem)
                 #points_visible(elem)
@@ -234,6 +285,7 @@ class SequenceGenerator(object):
             end_time = time.time()
             print ("Time taken for 1 loop run = ", end_time - start_time)
             
+        return number_actions
             
 
     def explore_scene(self,config_filename):
@@ -311,7 +363,8 @@ class SequenceGenerator(object):
                 print ("pose_reached while going to object=" , pose)
 
             if flag == 1:
-                action = {"action":"OpenObject", "objectId":object_id_to_search}
+                #action = {"action":"OpenObject", "objectId":object_id_to_search}
+                action = "OpenObject, objectId:%s" % object_id_to_search
             
                 self.event = self.agent.step(action)
                 print ("return status of open object aciton:",self.agent.game_state.event.return_status)

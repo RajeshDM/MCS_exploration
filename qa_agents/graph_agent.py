@@ -20,7 +20,8 @@ import constants
 
 
 class GraphAgent(object):
-    def __init__(self, sess, reuse=True, num_unrolls=1, game_state=None, net_scope=None):
+    def __init__(self, sess,env, reuse=True, num_unrolls=1, game_state=None, net_scope=None):
+        '''
         if net_scope is None:
             with tf.name_scope('agent'):
                 with tf.variable_scope('nav_global_network', reuse=reuse):
@@ -30,14 +31,15 @@ class GraphAgent(object):
             with tf.variable_scope(net_scope, reuse=True):
                 self.network = FreeSpaceNetwork(constants.GRU_SIZE, 1, 1)
                 self.network.create_net(add_loss=False)
-
+        '''
         if game_state is None:
-            self.game_state = GameState(sess=sess)
+            self.game_state = GameState(sess=sess,env=env)
+            #self.game_state = GameState(sess=sess,env=env)
         else:
             self.game_state = game_state
         self.action_util = self.game_state.action_util
         self.gt_graph = None
-        self.sess = sess
+        #self.sess = sess
         self.num_steps = 0
         self.global_step_id = 0
         self.num_unrolls = num_unrolls
@@ -149,7 +151,7 @@ class GraphAgent(object):
         if scene_name is not None:
             if self.game_state.env is not None and type(self.game_state) == GameState:
                 self.game_state.reset(scene_name, use_gt=False, seed=seed,config_filename=config_filename)
-            self.gt_graph = graph_obj.Graph('layouts/%s-layout_%s.npy' % (scene_name,str(constants.AGENT_STEP_SIZE)), use_gt=True)
+            self.gt_graph = graph_obj.Graph('layouts/%s-layout_%s.npy' % (scene_name,str(constants.AGENT_STEP_SIZE)), self.action_util, use_gt=True)
             self.bounds = [self.game_state.graph.xMin, self.game_state.graph.yMin,
                 self.game_state.graph.xMax - self.game_state.graph.xMin + 1,
                 self.game_state.graph.yMax - self.game_state.graph.yMin + 1]

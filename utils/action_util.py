@@ -16,7 +16,22 @@ class ActionUtil(object):
                 #{'action' : 'LookUp'},
                 #{'action' : 'LookDown'},
                 ]
-        self.action_to_ind = {frozenset(action.items()) : ii for ii,action in enumerate(self.actions)}
+        '''
+        self.actions = {
+                'MoveAhead': 'MoveAhead, amount=%d' % constants.AGENT_STEP_SIZE*2,
+                'RotateRight' : 'RotateLook, rotation=90',
+                'RotateLeft' : 'RotateLook, rotation=-90',
+                'MoveLeft' : '',
+                'MoveRight' : ''
+                #''
+                #{'action' : 'MoveAhead', 'moveMagnitude' : constants.AGENT_STEP_SIZE},
+                #{'action' : 'RotateLeft'},
+                #{'action' : 'RotateRight'},
+                #{'action' : 'LookUp'},
+                #{'action' : 'LookDown'},
+                }
+        '''
+        #self.action_to_ind = {frozenset(action.items()) : ii for ii,action in enumerate(self.actions)}
 
         self.reverse_actions = {
             'MoveAhead' : 'MoveBack',
