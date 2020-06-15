@@ -345,10 +345,12 @@ class GameState(object):
                     'horizon': 0}
                     #'horizon': 60}
             '''
-            if True :
+            while True :
                 self.event = game_util.reset(self.env, self.scene_name,config_filename)
                 #self.event = self.event.events[0]
                 print ("type of event 2 : ", type(self.event))
+                lastActionSuccess = self.event.return_status
+                break
                 start_point_2 = []
                 '''
                 self.agent_height = self.event.metadata['agent']['position']['y']
@@ -401,10 +403,10 @@ class GameState(object):
         #self.pose = game_util.get_pose(self.event)
         print ("current pose = ", self.pose)
         self.board = None
-        point_dists = np.sum(np.abs(self.graph.points - np.array(self.end_point[:2])), axis=1)
+        #point_dists = np.sum(np.abs(self.graph.points - np.array(self.end_point[:2])), axis=1)
         #print ("jsut b4 end of function")
-        dist_min = np.min(point_dists)
-        self.is_possible_end_point = int(dist_min < 0.0001)
+        #dist_min = np.min(point_dists)
+        #self.is_possible_end_point = int(dist_min < 0.0001)
         print ("end of reset in game state function")
 
     def step(self, action_or_ind):
@@ -414,7 +416,7 @@ class GameState(object):
             action = action_or_ind
         t_start = time.time()
 
-        #print (action)
+        print (action)
 
         # The object nearest the center of the screen is open/closed if none is provided.
         
@@ -429,6 +431,8 @@ class GameState(object):
         elif action['action'] == 'MoveAhead':
             action =  'MoveAhead, amount=0.5'
             #action =  'MoveAhead, amount=0.2'
+        elif action['action'] == 'RotateLook':
+            action = "RotateLook, rotation=%d" % action['rotation'] 
         elif action['action'] == 'OpenObject':
             action = "OpenObject,objectId="+ str(action["objectId"])
             print ("constructed action for open object", action)

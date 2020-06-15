@@ -13,6 +13,15 @@ from cover_floor import *
 import math
 import time
 
+#from navigation.bounding_box_navigator import BoundingBoxNavigator, SHOW_ANIMATION
+#from navigation.visibility_road_map import ObstaclePolygon
+from navigation import bounding_box_navigator
+#import navigation
+from navigation.visibility_road_map import ObstaclePolygon
+import matplotlib.pyplot as pl
+
+import machine_common_sense
+
 class SequenceGenerator(object):
     def __init__(self, sess,env):
         self.agent = graph_agent.GraphAgent(sess,env, reuse=True)
@@ -22,6 +31,9 @@ class SequenceGenerator(object):
         self.scene_num = 0
         self.count = -1
         self.scene_name = None
+        self.nav =bounding_box_navigator.BoundingBoxNavigator()
+        #if isinstance(self.nav, BoundingBoxNavigator):
+        #    self.env.add_obstacle_func = self.nav.add_obstacle_from_step_output
 
     def generate_episode(self):
         self.count += 1
@@ -161,28 +173,42 @@ class SequenceGenerator(object):
 
     def explore_3d_scene(self,config_filename):
         number_actions = 0
+        self.success_distance = 0.3
         self.scene_name = 'transferral_data'
         #print('New episode. Scene %s' % self.scene_name)
         self.agent.reset(self.scene_name,config_filename = config_filename)
 
+        self.event = self.game_state.event
         pose = game_util.get_pose(self.game_state.event)[:3]
-        plan, path = self.agent.gt_graph.get_shortest_path(
-                pose, self.game_state.end_point)
-        print ("optimal path planning done", path, plan)
+        #plan, path = self.agent.gt_graph.get_shortest_path(
+        #        pose, self.game_state.end_point)
+        #print ("optimal path planning done", path, plan)
         num_iters = 0
         exploration_routine = []
         exploration_routine = cover_floor.flood_fill(0,0, cover_floor.check_validity)        
         #print (exploration_routine, len(exploration_routine))
         self.graph = graph_2d()
+        pose = game_util.get_pose(self.game_state.event)[:3]
         #unexplored = get_unseen(self.graph.graph)
         #print (len(unexplored))
         #print (unexplored)
 
-        self.event = self.game_state.event
+        #self.event = self.game_state.event
         #visible_points = get_visible_points(pose[0],pose[1],pose[2],self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )
         #print ("visible points = " , visible_points)
         #print (len(visible_points))
+        
+        #goal = exploration_routine[-1]
+        goal = [0]*3
+        goal[0] = exploration_routine[3][0]
+        goal[1] = exploration_routine[3][1]
+        goal[2] = pose[2]
 
+        #print (pose[0], pose[1])
+
+        self.nav.go_to_goal(pose, goal, self.agent,self.success_distance,True)
+
+        return
 
         #number_visible_points = points_visible_from_position(exploration_routine[10][0],exploration_routine[10][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
         #print ("number of visible points = ", number_visible_points)
@@ -197,6 +223,8 @@ class SequenceGenerator(object):
         while ( len(unexplored) > 25 ) : 
             start_time = time.time()
 
+            #self.nav.go_to_goal(self.nav_env, goal, success_distance, epsd_collector, frame_collector )
+            self.nav.go_to_goal(pose,)
             while len(plan) > 0:
                 action = plan[0]
                 #print ("action to take" , action)
@@ -216,6 +244,7 @@ class SequenceGenerator(object):
             
             #self.agent = explore_point(pose[0],pose[1], self.graph.graph, self.agent)
 
+            '''
             flag = 0
             object_id_to_search = ""
             for key,value in self.agent.game_state.discovered_explored.items():
@@ -258,7 +287,7 @@ class SequenceGenerator(object):
         
                 #while (self.agent.event.return_status != "SUCCESSFUL" ) or trials < 10 :
                 #    trials += 1
-
+            '''
 
             print ("before next best point calculation")
             for elem in exploration_routine:

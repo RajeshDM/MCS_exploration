@@ -71,8 +71,8 @@ def explore_all_scenes():
     all_scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-']#, 'transferral_goal-']
-    #scene_types = ['transferral_goal-']
-    scene_types = ['traversal_goal-']
+    scene_types = ['transferral_goal-']
+    #scene_types = ['traversal_goal-']
     #scene_types = ['retrieval_goal-']
 
 

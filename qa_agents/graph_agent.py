@@ -155,10 +155,12 @@ class GraphAgent(object):
             self.bounds = [self.game_state.graph.xMin, self.game_state.graph.yMin,
                 self.game_state.graph.xMax - self.game_state.graph.xMin + 1,
                 self.game_state.graph.yMax - self.game_state.graph.yMin + 1]
+            '''
             if len(self.game_state.end_point) == 0:
                 self.game_state.end_point = (self.game_state.graph.xMin + constants.TERMINAL_CHECK_PADDING,
                         self.game_state.graph.yMin + constants.TERMINAL_CHECK_PADDING, 0)
                 print ("in agent reset end point set to : " , self.game_state.end_point)
+            '''
             self.action = np.zeros(self.action_util.num_actions)
             self.memory = np.zeros((constants.SPATIAL_MAP_HEIGHT, constants.SPATIAL_MAP_WIDTH, constants.MEMORY_SIZE))
             self.gru_state = np.zeros((1, constants.GRU_SIZE))
@@ -172,9 +174,9 @@ class GraphAgent(object):
             #print ("")
             self.game_state.reset()
 
-        self.goal_pose = np.array([self.game_state.end_point[0] - self.game_state.graph.xMin,
-                self.game_state.end_point[1] - self.game_state.graph.yMin],
-                dtype=np.int32)[:2]
+        #self.goal_pose = np.array([self.game_state.end_point[0] - self.game_state.graph.xMin,
+        #        self.game_state.end_point[1] - self.game_state.graph.yMin],
+        #        dtype=np.int32)[:2]
         #self.inference()
 
     def step(self, action):
