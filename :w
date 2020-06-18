@@ -3,9 +3,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 import constants
-from cover_floor import update_seen,get_visible_points,get_visible_points
 from navigation.fov import FieldOfView
-from utils import game_util
 
 SHOW_ANIMATION = True
 random.seed(1)
@@ -34,8 +32,6 @@ class BoundingBoxNavigator:
 		#print(i)
 		# execute a small step along that plan by
 		# turning to face the first waypoint
-		#print ("From one step move, current_position and goal ", self.agentX, self.agentY, goal)
-		#print ("From one step move, path found by path finder ",pathX,pathY)
 		if len(pathX) == 1 and len(pathY) == 1:
 			i = 0
 		else:
@@ -48,7 +44,7 @@ class BoundingBoxNavigator:
 		distToFirstWaypoint = math.sqrt((self.agentX-pathX[i])**2 + (self.agentY-pathY[i])**2)
 		stepSize = min(self.maxStep, distToFirstWaypoint)
 
-		#print ("From one step move ",self.agentX,self.agentY, goal, stepSize, angleFromAxis)
+		print ("From one step move ",self.agentX,self.agentY, goal, stepSize, angleFromAxis)
 
 		return stepSize, angleFromAxis
 
@@ -78,7 +74,7 @@ class BoundingBoxNavigator:
 					y_list.append(obj.dimensions[i]['z'])
 				self.scene_obstacles_dict[obj.uuid] = ObstaclePolygon(x_list, y_list)
 
-	def go_to_goal(self,goal_pose,agent,success_distance,visibility_graph,SHOW_ANIMATION): 
+	def go_to_goal(self,goal_pose,agent,success_distance,SHOW_ANIMATION): 
 		#print ("current pose in go to goal", current_pose[1])
 		goal_pose[0],goal_pose[1] = goal_pose[0]*constants.AGENT_STEP_SIZE,goal_pose[1]*constants.AGENT_STEP_SIZE
 		#goal_pose[0],goal_pose[1] = goal_pose[0]*5,goal_pose[1]*5
@@ -97,14 +93,12 @@ class BoundingBoxNavigator:
 			roadmap = IncrementalVisibilityRoadMap(self.radius, do_plot=False)
 			#roadmap = VisibilityRoadMap(self.radius, do_plot=False)
 			for obstacle_key, obstacle in self.scene_obstacles_dict.items():
-				roadmap.addObstacle(obstacle)
 				#if not obstacle.contains_goal((gx, gy)):
-				#	roadmap.addObstacle(obstacle)
+					roadmap.addObstacle(obstacle)
 				#if not obstacle.contains_goal((gx, gy)):
 				#	roadmap.addObstacle(obstacle)
 
-			#fov = FieldOfView([sx, sy, 0], 42.5 / 180.0 * math.pi, self.scene_obstacles_dict.values())
-			fov = FieldOfView([self.agentX, self.agentY, 0], 42.5 / 180.0 * math.pi, self.scene_obstacles_dict.values())
+			fov = FieldOfView([sx, sy, 0], 42.5 / 180.0 * math.pi, self.scene_obstacles_dict.values())
 			fov.agentX = self.agentX
 			fov.agentY = self.agentY
 			fov.agentH = self.agentH
@@ -138,21 +132,20 @@ class BoundingBoxNavigator:
 			print("heading , rotation",heading,  rotation_degree)
             
 
-			#print("all objects found until now and stored" ,self.scene_obstacles_dict )
+			print("all objects found until now and stored" ,self.scene_obstacles_dict )
 			#nav_env.env.step(action="RotateLook", rotation=rotation_degree)
 			action={'action':"RotateLook",'rotation':rotation_degree}
 			agent.step(action)#={'action':"RotateLook",rotation=rotation_degree}
-			self.add_obstacle_from_step_output(agent.game_state.event)
 			if agent.game_state.event.return_status == "SUCCESSFUL":
-				actions += 1
-				#rotation = agent.game_state.event.rotation / 360 * (2 * math.pi)
-				rotation = agent.game_state.event.rotation
-				pose = game_util.get_pose(agent.game_state.event)[:3]  
-				update_seen(visibility_graph,pose[0],pose[1],rotation ,100,42.5,self.scene_obstacles_dict )
-				print("Visible points",get_visible_points(self.agentX,self.agentY ,rotation ,42.5, 25 ,self.scene_obstacles_dict, visibility_graph ))
+				actions += 1 
 			else:
 				continue
+			self.add_obstacle_from_step_output(agent.game_state.event)
 
+			#if abs(rotation_degree) > 1e-2:
+			#	if 360 - abs(rotation_degree) > 1e-2:
+			#		print ("in the continue", abs(rotation_degree), 360 - abs(rotation_degree))
+			#		continue
 
 			agentX_exp = self.agentX + stepSize * math.sin(self.agentH)
 			agentY_exp = self.agentY + stepSize * math.cos(self.agentH)
@@ -166,18 +159,10 @@ class BoundingBoxNavigator:
 			self.agentH = agent.game_state.event.rotation / 360 * (2 * math.pi)
 			#nav_env.env.step(action="MoveAhead", amount=0.5)
 
-			if abs(rotation_degree) > 1:
-				if 360 - abs(rotation_degree) > 1:
-					#print ("in the continue", abs(rotation_degree), 360 - abs(rotation_degree))
-					continue
 			action={'action':"MoveAhead", 'amount':stepSize}
 			agent.step(action)#={'action':"RotateLook",rotation=rotation_degree}
 			if agent.game_state.event.return_status == "SUCCESSFUL":
 				actions += 1 
-				pose = game_util.get_pose(agent.game_state.event)[:3]
-				rotation = agent.game_state.event.rotation
-				update_seen(visibility_graph,pose[0],pose[1],rotation ,100,42.5,self.scene_obstacles_dict )
-				#update_seen(visibility_graph,pose[0],pose[1],pose[2] ,agent.game_state.event)
 			else:
 				continue
 

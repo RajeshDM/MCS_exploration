@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
+#from geometry import Geometry
+#from dijkstra_search import DijkstraSearch
 from navigation.geometry import Geometry
 from navigation.dijkstra_search import DijkstraSearch
 from shapely.geometry import Point, Polygon

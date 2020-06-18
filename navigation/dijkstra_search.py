@@ -123,12 +123,14 @@ class DijkstraSearch:
 
     @staticmethod
     def is_same_node_with_xy(node_x, node_y, node_b):
-        dist = np.hypot(node_x - node_b.x,
-                        node_y - node_b.y)
+        dist = math.sqrt((node_x-node_b.x)**2 + (node_y-node_b.y)**2)#np.hypot(node_x - node_b.x,
+        #dist = np.hypot(node_x - node_b.x,
+        #                node_y - node_b.y)
         return dist <= 0.1
 
     @staticmethod
     def is_same_node(node_a, node_b):
-        dist = np.hypot(node_a.x - node_b.x,
-                        node_b.y - node_b.y)
+        dist = math.sqrt((node_a.x-node_b.x)**2 + (node_a.y-node_b.y)**2)#np.hypot(node_x - node_b.x,
+        #dist = np.hypot(node_a.x - node_b.x,
+        #                node_b.y - node_b.y)
         return dist <= 0.1

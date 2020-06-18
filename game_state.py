@@ -416,7 +416,7 @@ class GameState(object):
             action = action_or_ind
         t_start = time.time()
 
-        print (action)
+        #print (action)
 
         # The object nearest the center of the screen is open/closed if none is provided.
         
@@ -429,6 +429,7 @@ class GameState(object):
         elif action['action'] == 'RotateLeft':
             action = "RotateLook, rotation=-90" 
         elif action['action'] == 'MoveAhead':
+            #action =  'MoveAhead, amount=%d' % action['amount']
             action =  'MoveAhead, amount=0.5'
             #action =  'MoveAhead, amount=0.2'
         elif action['action'] == 'RotateLook':
@@ -438,6 +439,7 @@ class GameState(object):
             print ("constructed action for open object", action)
         '''
         '''
+        #print (action)
         #print ("number of objects discovered b4 taking action : ",len(self.discovered_objects))
         self.event = self.env.step(action)
         #print ("type of event in step : ", type(self.event))

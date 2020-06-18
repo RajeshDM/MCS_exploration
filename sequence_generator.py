@@ -173,13 +173,14 @@ class SequenceGenerator(object):
 
     def explore_3d_scene(self,config_filename):
         number_actions = 0
-        self.success_distance = 0.3
+        success_distance = 0.3
         self.scene_name = 'transferral_data'
         #print('New episode. Scene %s' % self.scene_name)
         self.agent.reset(self.scene_name,config_filename = config_filename)
 
         self.event = self.game_state.event
         pose = game_util.get_pose(self.game_state.event)[:3]
+        self.nav.add_obstacle_from_step_output(self.event)
         #plan, path = self.agent.gt_graph.get_shortest_path(
         #        pose, self.game_state.end_point)
         #print ("optimal path planning done", path, plan)
@@ -197,34 +198,53 @@ class SequenceGenerator(object):
         #visible_points = get_visible_points(pose[0],pose[1],pose[2],self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )
         #print ("visible points = " , visible_points)
         #print (len(visible_points))
-        
-        #goal = exploration_routine[-1]
-        goal = [0]*3
-        goal[0] = exploration_routine[3][0]
-        goal[1] = exploration_routine[3][1]
-        goal[2] = pose[2]
-
-        #print (pose[0], pose[1])
-
-        self.nav.go_to_goal(pose, goal, self.agent,self.success_distance,True)
-
-        return
 
         #number_visible_points = points_visible_from_position(exploration_routine[10][0],exploration_routine[10][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
         #print ("number of visible points = ", number_visible_points)
 
-        update_seen(self.graph.graph,pose[0],pose[1],pose[2],self.game_state.event)
+        #update_seen(self.graph.graph,pose[0],pose[1],pose[2],self.game_state.event)
         unexplored = get_unseen(self.graph.graph)
         print (len(unexplored))
         #print (unexplored)
-        #return 
+        #return
+        explore_point(self.event.position['x'],self.event.position['z'], self.graph.graph,self.agent , 42.5, self.nav.scene_obstacles_dict)
 
+        unexplored = get_unseen(self.graph.graph)
+        print (len(unexplored))
 
-        while ( len(unexplored) > 25 ) : 
+        while ( len(unexplored) > 35 ) :
             start_time = time.time()
 
-            #self.nav.go_to_goal(self.nav_env, goal, success_distance, epsd_collector, frame_collector )
-            self.nav.go_to_goal(pose,)
+            print ("before next best point calculation")
+            max_visible = 0
+            max_visible_position = []
+            start_time = time.time()
+            print (exploration_routine)
+            for elem in exploration_routine:
+                #number_visible_points = points_visible_from_position(exploration_routine[1][0],exploration_routine[1][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )
+                #number_visible_points = points_visible_from_position(self.event.position['x'],self.event.position['z'],self.event.camera_field_of_view,100,self.nav.scene_obstacles_dict,self.graph.graph )
+                new_visible_pts = points_visible_from_position(elem[0]*constants.AGENT_STEP_SIZE, elem[1]*constants.AGENT_STEP_SIZE, self.event.camera_field_of_view,100,self.nav.scene_obstacles_dict,self.graph.graph )
+                #if max_visible < number_visible_points/math.sqrt((pose[0]-elem[0])**2 + (pose[1]-elem[1])**2):
+                if max_visible < new_visible_pts: #and abs(max_visible_points[-1][0] - elem[0]) > 2 and  :
+                    max_visible_position.append(elem)
+                #points_visible(elem)
+            end_time = time.time()
+            print (max_visible_position)
+            print ("time taken to select next position" , end_time-start_time)
+            if len(max_visible_position) == 0 :
+                return number_actions
+            new_end_point = [0]*3
+            new_end_point[0] = max_visible_position[-1][0]
+            new_end_point[1] = max_visible_position[-1][1]
+            new_end_point[2] = pose[2]
+            exploration_routine.remove(max_visible_position[-1])
+
+            print ("New goal selected : ", new_end_point)
+
+            number_actions=self.nav.go_to_goal(new_end_point,self.agent,success_distance,self.graph.graph,True)
+            explore_point(new_end_point[0], new_end_point[1], self.graph.graph, self.agent, 42.5,
+                          self.nav.scene_obstacles_dict)
+            '''
             while len(plan) > 0:
                 action = plan[0]
                 #print ("action to take" , action)
@@ -238,9 +258,7 @@ class SequenceGenerator(object):
                 update_seen(self.graph.graph,pose[0],pose[1],pose[2],self.game_state.event)
              
                 #print ("pose_reached =" , pose)
-            
-            max_visible = 0
-            max_visible_position = []
+            '''
             
             #self.agent = explore_point(pose[0],pose[1], self.graph.graph, self.agent)
 
@@ -289,25 +307,9 @@ class SequenceGenerator(object):
                 #    trials += 1
             '''
 
-            print ("before next best point calculation")
-            for elem in exploration_routine:
-                
-                #number_visible_points = points_visible_from_position(exploration_routine[1][0],exploration_routine[1][1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
-                number_visible_points = points_visible_from_position(elem[0],elem[1], self.event.camera_field_of_view,self.event.camera_clipping_planes[1] )  
-                #if max_visible < number_visible_points/math.sqrt((pose[0]-elem[0])**2 + (pose[1]-elem[1])**2):
-                if max_visible < number_visible_points:
-                    max_visible_position.append(elem)
-                #points_visible(elem)
-
-            new_end_point = [0]*3
-            new_end_point[0] = max_visible_position[-1][0]
-            new_end_point[1] = max_visible_position[-1][1]
-            new_end_point[2] = pose[2]
-        
-            exploration_routine.remove(max_visible_position[-1])
             
-            plan, path = self.agent.gt_graph.get_shortest_path(
-                    pose, tuple(new_end_point))
+            #plan, path = self.agent.gt_graph.get_shortest_path(
+            #        pose, tuple(new_end_point))
             #print ("optimal path planning done", path, plan)
             unexplored = get_unseen(self.graph.graph)
             print (len(unexplored))

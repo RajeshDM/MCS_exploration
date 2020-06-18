@@ -1,3 +1,5 @@
+#from visibility_road_map import ObstaclePolygon
+#from geometry import Geometry
 from navigation.visibility_road_map import ObstaclePolygon
 from navigation.geometry import Geometry
 import math
@@ -36,6 +38,8 @@ class FieldOfView:
 				poly_X.append(x)
 				poly_Y.append(y)
 				poly_angle.append(theta)
+		#print ("polyX b4 obstacle part", poly_X)
+		#print ("polyY b4 obstacle part", poly_Y)
 
 		if True:
 			# find any points in the FoV
@@ -78,6 +82,8 @@ class FieldOfView:
 		indx = sorted(range(len(poly_angle)), key=lambda x: (poly_angle[x]+self.agentH) % (2*np.pi))
 		poly_X = [p1.x] + list(np.array(poly_X)[indx])+ [p1.x]
 		poly_Y = [p1.y] + list(np.array(poly_Y)[indx]) + [p1.y]
+		#print ("polyX", poly_X)
+		#print ("polyY", poly_Y)
 		return ObstaclePolygon(poly_X, poly_Y)
 
 
@@ -140,7 +146,9 @@ class FieldOfView:
 
 
 def genRandomRectangle():
+    #width = 1#random.randrange(5,50)
     width = random.randrange(5,50)
+    #height = 1#random.randrange(5,50)
     height = random.randrange(5,50)
     botLeftX = random.randrange(1,100)
     botRightX = random.randrange(1,100)
@@ -168,7 +176,7 @@ def genRandomRectangle():
 
 def main():
 	print(__file__ + " start!!")
-	for i in range(20):
+	for i in range(1):
 
 		plt.cla()
 		# start and goal position

@@ -44,6 +44,7 @@ class Planner:
 			#print(i)
 			# execute a small step along that plan by
 			# turning to face the first waypoint
+			#print ("From one step move, path found by path finder ",pathX,pathY)
 			dX = pathX[i]-self.agentX
 			dY = pathY[i]-self.agentY
 			angleFromAxis = math.atan2(dX, dY)
@@ -122,14 +123,16 @@ def main():
 	print(__file__ + " start!!")
 
 
-	for i in range(20):
+	for i in range(1):
 		# start and goal position
 		sx, sy = random.randrange(-100,-80), random.randrange(-100,-80)  # [m]
 		gx, gy = random.randrange(80,100), random.randrange(80,100)  # [m]
+		#sx, sy = -60,-80#random.randrange(-100,-80), random.randrange(-100,-80)  # [m]
+		#gx, gy = -60,80#random.randrange(80,100), random.randrange(80,100)  # [m]
 
 		robot_radius = 5.0  # [m]
 
-		cnt = 15
+		cnt = 1
 		obstacles=[]
 		for i in range(cnt):
 			obstacles.append(genRandomRectangle())
@@ -170,6 +173,7 @@ def main():
 			fov.agentY = plan.agentY
 			fov.agentH = plan.agentH
 			poly = fov.getFoVPolygon(100)
+			#print(poly.bounds)# = fov.getFoVPolygon(100)
 			
 
 			if show_animation:

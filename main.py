@@ -3,7 +3,7 @@ import pdb
 import os
 import random
 import threading
-import tensorflow as tf
+#import tensorflow as tf
 import time
 import json
 
@@ -71,14 +71,15 @@ def explore_all_scenes():
     all_scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-', 'transferral_goal-']
     #scene_types = ['retrieval_goal-', 'traversal_goal-']#, 'transferral_goal-']
-    scene_types = ['transferral_goal-']
-    #scene_types = ['traversal_goal-']
+    #scene_types = ['transferral_goal-']
+    scene_types = ['traversal_goal-']
     #scene_types = ['retrieval_goal-']
 
 
     #scene_numbers = ['0933','0934','0935']
     #scene_numbers = ['0058']#,'0934','0935']
-    scene_numbers = create_scene_numbers(1)
+    scene_numbers = ['0001']
+    #scene_numbers = create_scene_numbers(2)
     print (scene_numbers)
     #exit()
     #scene_number = [i]
@@ -114,7 +115,7 @@ def explore_all_scenes():
             
             total_actions += number_actions
             #sequence_generator.agent.game_state.env.end_scene('', 0.0) 
-            goal = sequence_generator.agent.game_state.goal
+            goal = sequence_generator.agent.game_state.event.goal
             goal_objects = []
             
             

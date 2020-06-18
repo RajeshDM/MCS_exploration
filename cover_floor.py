@@ -3,6 +3,9 @@ import constants
 import networkx as nx
 import math
 import time 
+from shapely.geometry import Point, Polygon  
+from navigation.fov import FieldOfView
+import matplotlib.pyplot as plt
 
 testing = 0
 
@@ -10,7 +13,7 @@ testing = 0
 if testing != 1 :
     #AGENT_STEP_SIZE = 0
     max_abs = 5/constants.AGENT_STEP_SIZE
-    move_step_size = 6
+    move_step_size = 7
 else :
     move_step_size = 1
     max_abs =1/constants.AGENT_STEP_SIZE
@@ -132,7 +135,7 @@ def pointInPolygon(nvert, polygonX, polygonY, targetX, targetY):
 Get the set of points visible from a given position and 
 dircetion of the agent
 ''' 
-def get_visible_points_old(x,y,direction,camera_field_of_view,radius):
+def get_visible_points_v1(x,y,direction,camera_field_of_view,radius):
     '''
     𝑝2.𝑥=𝑐𝑝.𝑥+𝑟∗𝑐𝑜𝑠(𝛼+𝜃)
     𝑝2.𝑦=𝑐𝑝.𝑦+𝑟∗𝑠𝑖𝑛(𝛼+𝜃)
@@ -244,30 +247,31 @@ def get_unseen(g):#,xMin,xMax,yMin,yMax):
 Funcrtion to get all the visible points from a certain point in the 2D grid
 '''
 
-def points_visible_from_position(x,y,camera_field_of_view,radius):
+def points_visible_from_position(x,y,camera_field_of_view,radius,obstacles,visibility_graph):
     number_visible_points = 0
-    number_directions = 4
-    #number_directions = 8
+    #number_directions = 4
+    number_directions = 8
     for direction in range (0,number_directions):#,number_directions*2):
     #for direction in range (0,number_directions):
         #print (direction)
         #number_visible_points += len(get_visible_points(x,y,direction/2,camera_field_of_view, radius))
-        number_visible_points += len(get_visible_points(x,y,direction,camera_field_of_view, radius))
+        number_visible_points += len(get_visible_points(x,y,direction*45,camera_field_of_view, radius,obstacles,visibility_graph))
 
     return number_visible_points
 
 '''
 Function to update any new explored points in the grid
 '''
-def update_seen(g, x, z, direction,event):
-    camera_field_of_view = event.camera_field_of_view
-    radius = event.camera_clipping_planes[1]
-    visible_points = get_visible_points(x,z,direction,camera_field_of_view,radius)
+def update_seen(g, x, z, rotation,radius, camera_field_of_view,obstacles):
+    #camera_field_of_view = event.camera_field_of_view
+    #radius = event.camera_clipping_planes[1]
+    visible_points = get_visible_points(x,z,rotation,camera_field_of_view,radius,obstacles,g )
+
     for elem in visible_points :
         g.nodes[elem]['seen']= True
     #pass
 
-def explore_point(x,y,graph ,agent):
+def explore_point(x,y,graph ,agent, camera_field_of_view,obstacles):
 
     directions = 8
     event = agent.game_state.event
@@ -275,7 +279,7 @@ def explore_point(x,y,graph ,agent):
     action = "RotateLook, rotation=45"
     for direction in range (0,directions):
         agent.game_state.env.step(action)
-        update_seen( graph,x , y ,direction/2 ,  event  )
+        update_seen( graph,x , y ,direction*45 , 100, camera_field_of_view, obstacles )
     #pass
     return agent
     
@@ -330,8 +334,121 @@ def flood_fill(x,y, check_validity):
         #    break
     return q
 
+def get_visible_points(x,y,rotation,camera_field_of_view,radius,scene_obstacles_dict,visibility_graph):
+    step_size = constants.AGENT_STEP_SIZE
+    graph_x = x/constants.AGENT_STEP_SIZE
+    graph_z = y/constants.AGENT_STEP_SIZE
 
-def get_visible_points(x,y,direction,camera_field_of_view,radius):
+    rotation_radians = rotation / 360 * (2 * math.pi)
+
+    fov = FieldOfView([x,y, 0], camera_field_of_view / 180.0 * math.pi, scene_obstacles_dict.values())
+    fov.agentH = rotation_radians
+    fov_poly = fov.getFoVPolygon(12)
+
+    #print ("poly X", fov_poly.x_list)
+    #print ("poly Y", fov_poly.y_list)
+    pt_1_angle = math.degrees(math.atan((fov_poly.x_list[1]/step_size-graph_x)/(fov_poly.y_list[1]/step_size-graph_z)))
+    pt_2_angle = math.degrees(math.atan((fov_poly.x_list[-2]/step_size-graph_x)/(fov_poly.y_list[-2]/step_size-graph_z)))
+
+    lower_angle = min(pt_1_angle,pt_2_angle)
+    higher_angle = max(pt_1_angle,pt_2_angle)
+    loop_x_min, loop_x_max = int(min(fov_poly.x_list)/constants.AGENT_STEP_SIZE), int(max(fov_poly.x_list)/constants.AGENT_STEP_SIZE)
+    loop_z_min, loop_z_max = int(min(fov_poly.y_list)/constants.AGENT_STEP_SIZE), int(max(fov_poly.y_list)/constants.AGENT_STEP_SIZE)
+
+    visible_points = []
+    dict_values =scene_obstacles_dict.values()
+    start_time = time.time()
+    for i in range(loop_x_min, loop_x_max+1 ): 
+        for j in range(loop_z_min, loop_z_max+1):
+            #goal_point = Point(i,j)
+            #if goal_point.within(poly):
+            if j==graph_z or j >= zMax or i >= xMax or i<xMin or j < zMin:
+                continue
+            current_pt_angle =  math.degrees(math.atan((i-graph_x)/(j-graph_z)))
+            #pt_2_angle =  math.degrees(math.atan((p2_x-x)/(p2_z-z)))
+            #if visibility_graph[elem]['seen'] or
+            node = visibility_graph.nodes[(i,j)]#g.nodes[(x, y)]
+            # if not (node['visited']) and not(node['seen']) and not(node['contains_object']):
+            if not (node['visited'] or node['seen'] or node['contains_object']):
+                if current_pt_angle >= lower_angle and current_pt_angle <= higher_angle :
+                    if castRay(graph_x,graph_z,i,j,dict_values):
+                        #if ()
+                        visible_points.append((i,j))
+            #else :
+            #    print ("already seen")
+    end_time = time.time()
+    time_taken = end_time- start_time
+    #print ("time taken for processing = " , end_time- start_time)
+    '''
+    plt.cla()
+    plt.xlim((-7, 7))
+    plt.ylim((-7, 7))
+    plt.gca().set_xlim((-7, 7))
+    plt.gca().set_ylim((-7, 7))
+
+    plt.plot(x,y, "or")
+    #plt.plot(gx, gy, "ob")
+    fov_poly.plot("-r")
+
+    for obstacle in scene_obstacles_dict.values():
+        obstacle.plot("-g")
+
+    plt.axis("equal")
+    plt.pause(0.1)
+    '''
+    return visible_points
+
+    #poly.plot()
+
+
+def castRay(graph_x, graph_y, check_x, check_y,obstacle,clr="-g"):
+    #p1 = Geometry.Point(float(self.agentX), float(self.agentY))
+    #p2 = Geometry.Point(p1.x + maxLen * np.cos(angle), p1.y + maxLen * np.sin(angle))
+    p1 = Point(graph_x,graph_y)
+    p2 = Point(check_x, check_y)
+
+    #minD = math.inf
+    minD = math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2)
+    minX = p2.x
+    minY = p2.y
+    for obs in obstacle:
+        for i in range(len(obs.x_list) - 1):
+            o1 = Point(obs.x_list[i]/constants.AGENT_STEP_SIZE, obs.y_list[i]/constants.AGENT_STEP_SIZE)
+            o2 = Point(obs.x_list[i + 1]/constants.AGENT_STEP_SIZE, obs.y_list[i + 1]/constants.AGENT_STEP_SIZE)
+
+            try:
+                x, y = intersect(p1, p2, o1, o2)
+                d = math.sqrt((x - p1.x) ** 2 + (y - p1.y) ** 2)
+                # plt.plot(x,y,"xg")
+                if d < minD:
+                    return False
+            except ValueError:
+                continue
+    return True
+
+
+def intersect(a, b, c, d):
+    t_num = (a.x - c.x) * (c.y - d.y) - (a.y - c.y) * (c.x - d.x)
+    u_num = (a.x - b.x) * (a.y - c.y) - (a.y - b.y) * (a.x - c.x)
+    denom = (a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x)
+
+    if denom == 0:
+        raise ValueError
+    t = t_num / denom
+    u = - u_num / denom
+
+    if (-0.0000 <= t <= 1.0000) and (-0.0000 <= u <= 1.0000):
+        x = c.x + u * (d.x - c.x)
+        y = c.y + u * (d.y - c.y)
+
+        x2 = a.x + t * (b.x - a.x)
+        y2 = a.y + t * (b.y - a.y)
+
+        return x, y
+    raise ValueError
+
+
+def get_visible_points_v2(x,y,direction,camera_field_of_view,radius):
     
     #camera_field_of_view = 90
     #direction = 0.5
@@ -455,7 +572,7 @@ if __name__ == '__main__':
     #    for directions in range(0,1):
     #print (get_points_in_triangle(x,z,p1_x,p1_z,p2_x,p2_z))
     #print (get_points_in_polygon(x,z,p1_x,p1_z,p2_x,p2_z, p3_x,p3_z))
-    print (len(get_visible_points (x,z,1 , 45, 40)))
+    #print (len(get_visible_points (x,z,1 , 45, 40)))
     #print (len(get_visible_points_old (x,z,0 , 45, 40)))
 
     end_time = time.time()
